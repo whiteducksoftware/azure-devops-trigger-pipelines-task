@@ -5,8 +5,12 @@ Image which can be used in Azure DevOps Pipelines to trigger other pipelines.
 This project was inspired by [Azure/github-actions/pipelines](https://github.com/Azure/github-actions/tree/master/pipelines).
 
 ### Secrets
-- `AZURE_DEVOPS_TOKEN` – **Mandatory** 
-
+- `AZURE_DEVOPS_TOKEN` – **Mandatory**  
+    Note: If `AZURE_DEVOPS_TOKEN` is set as a Azure DevOps Secret you need to manually map the secret to an environment variable: (see examples)
+    ```
+    env:
+      AZURE_DEVOPS_TOKEN: $(AZURE_DEVOPS_TOKEN)
+    ```
 
 ### Environment variables
 - `AZURE_DEVOPS_URL` – **Mandatory**; the fully-qualified URL to the Azure DevOps organization (eg, `https://dev.azure.com/organization` or `https://server.example.com:8080/tfs/DefaultCollection`)
@@ -34,6 +38,8 @@ variables:
 steps:
   - script: task_init
     displayName: "Initialize the task"
+    env:
+      AZURE_DEVOPS_TOKEN: $(AZURE_DEVOPS_TOKEN)
 
   - script: task_queue
     displayName: "Trigger 'My Demo Pipeline' pipeline"
@@ -54,6 +60,8 @@ variables:
 steps:
   - script: task_init
     displayName: "Initialize the task"
+    env:
+      AZURE_DEVOPS_TOKEN: $(AZURE_DEVOPS_TOKEN)
 
   - script: task_queue "PipelineA"
     displayName: "Trigger 'PipelineA' pipeline"
