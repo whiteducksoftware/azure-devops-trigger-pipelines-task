@@ -27,9 +27,16 @@ LABEL name="Trigger Azure Pipelines"
 LABEL description="Container which can trigger Azure pipeline(s)" 
 
 # Add scripts
-RUN mkdir -p /opt/azure/pipelines/
+RUN mkdir -p /opt/azure/pipelines/bin
 ADD scripts /opt/azure/pipelines/
 
 # Fix permissions of the scripts
 RUN chmod +x /opt/azure/pipelines/init.sh
 RUN chmod +x /opt/azure/pipelines/queue.sh
+
+# Create bin folder
+RUN ln -s /opt/azure/pipelines/init.sh /opt/azure/pipelines/bin/task_init
+RUN ln -s /opt/azure/pipelines/queue.sh /opt/azure/pipelines/bin/task_queue
+
+# Add to path
+ENV PATH="/opt/azure/pipelines/bin:${PATH}"
