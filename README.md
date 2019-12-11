@@ -27,8 +27,8 @@ container:
   image: whiteduck/azure-devops-pipeline-trigger-task
 
 variables:
-  AZURE_DEVOPS_URL: "https://dev.azure.com/orcacloud"
-  AZURE_DEVOPS_PROJECT: "ADE"
+  AZURE_DEVOPS_URL: "https://dev.azure.com/demo"
+  AZURE_DEVOPS_PROJECT: "demo"
   AZURE_PIPELINE_NAME: "My Demo Pipeline"
 
 steps:
@@ -48,8 +48,8 @@ container:
   image: whiteduck/azure-devops-pipeline-trigger-task
 
 variables:
-  AZURE_DEVOPS_URL: "https://dev.azure.com/orcacloud"
-  AZURE_DEVOPS_PROJECT: "ADE"
+  AZURE_DEVOPS_URL: "https://dev.azure.com/demo"
+  AZURE_DEVOPS_PROJECT: "demo"
 
 steps:
   - script: task_init
