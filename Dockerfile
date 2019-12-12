@@ -21,10 +21,11 @@ RUN apt update && \
     apt install -y --no-install-recommends azure-cli
 
 # Add lables
-LABEL version="1.0.0"
-LABEL maintainer="whiteduck GmbH" 
-LABEL name="Trigger Azure Pipelines" 
-LABEL description="Container which can trigger Azure pipeline(s)" 
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.name="Trigger Azure Pipelines" 
+LABEL org.label-schema.description="Container which can trigger Azure pipeline(s)" 
+LABEL org.label-schema.vcs-ref="https://github.com/whiteducksoftware/azure-devops-trigger-pipelines-task"
+LABEL org.label-schema.maintainer="Stefan Kürzeder <stefan.kuerzeder@whiteduck.de>"
 
 # Add scripts
 RUN mkdir -p /opt/azure/pipelines/bin
