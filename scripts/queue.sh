@@ -35,14 +35,14 @@ BUILD_DEFINITION=$(az pipelines build definition show --id "${BUILD_DEFINITION_I
 if ! (echo "${BUILD_DEFINITION}" | jq -e .); then
     echo "Failed to  get pipeline using Id: ${BUILD_DEFINITION_ID}. Error: ${BUILD_DEFINITION}"
     exit 1;
-fi 
+fi
 
 REPOSITORY_NAME=$(echo "${BUILD_DEFINITION}" | jq -r ".repository?.name? //empty")
 REPOSITORY_TYPE=$(echo "${BUILD_DEFINITION}" | jq  -r ".repository?.type?  //empty")
 
-if [ -n "$REPOSITORY_NAME" ] && [ -n "$REPOSITORY_TYPE" ] && [ "$REPOSITORY_NAME" = "$GITHUB_REPOSITORY" ] && [ "$REPOSITORY_TYPE" = "GitHub" ]; 
-then
-    BUILD_OUTPUT=$(az pipelines build queue --definition-name "${AZURE_PIPELINE_NAME}" --branch "${GITHUB_REF}" --commit-id "${GITHUB_SHA}" --output json)
+if [ -n "$REPOSITORY_NAME" ] && [ -n "$REPOSITORY_TYPE" ] && [ "$REPOSITORY_TYPE" = "TfsGit" ]; 
+thens
+    BUILD_OUTPUT=$(az pipelines build queue --definition-name "${AZURE_PIPELINE_NAME}" --branch "${AZURE_DEVOPS_BRANCH}" --commit-id "${AZURE_DEVOPS_COMMIT}" --output json)
 else
     BUILD_OUTPUT=$(az pipelines build queue --definition-name "${AZURE_PIPELINE_NAME}" --output json)
 fi

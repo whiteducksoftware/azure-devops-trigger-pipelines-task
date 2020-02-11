@@ -17,6 +17,8 @@ This project was inspired by [Azure/github-actions/pipelines](https://github.com
 - `AZURE_DEVOPS_PROJECT` – **Mandatory** 
 - `AZURE_PIPELINE_NAME` – Optional; If not set, you need to pass it to task_queue: `task_queue *NAME*`  
     Note: `AZURE_PIPELINE_NAME` or `NAME` **is** case-sensitive.
+- `AZURE_DEVOPS_BRANCH`- Optional; Set if you want to queue the build for a specific branch, requires `AZURE_DEVOPS_COMMIT` to be set
+- `AZURE_DEVOPS_COMMIT`- Optional; Set if you want to queue the build for a specific commit, requires `AZURE_DEVOPS_BRANCH` to be set
 
 ### Notes:
 `task_init` is **mandatory** to be called before using `task_queue`
@@ -34,6 +36,8 @@ variables:
   AZURE_DEVOPS_URL: "https://dev.azure.com/demo"
   AZURE_DEVOPS_PROJECT: "demo"
   AZURE_PIPELINE_NAME: "My Demo Pipeline"
+  AZURE_DEVOPS_BRANCH: $(Build.SourceBranchName)
+  AZURE_DEVOPS_COMMIT: $(Build.SourceVersion)
 
 steps:
   - script: task_init
@@ -56,6 +60,8 @@ container:
 variables:
   AZURE_DEVOPS_URL: "https://dev.azure.com/demo"
   AZURE_DEVOPS_PROJECT: "demo"
+  AZURE_DEVOPS_BRANCH: $(Build.SourceBranchName)
+  AZURE_DEVOPS_COMMIT: $(Build.SourceVersion)
 
 steps:
   - script: task_init
