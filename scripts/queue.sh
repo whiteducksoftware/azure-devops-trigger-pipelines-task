@@ -41,7 +41,7 @@ REPOSITORY_NAME=$(echo "${BUILD_DEFINITION}" | jq -r ".repository?.name? //empty
 REPOSITORY_TYPE=$(echo "${BUILD_DEFINITION}" | jq  -r ".repository?.type?  //empty")
 
 if [ -n "$REPOSITORY_NAME" ] && [ -n "$REPOSITORY_TYPE" ] && [ "$REPOSITORY_TYPE" = "TfsGit" ]; 
-thens
+then
     BUILD_OUTPUT=$(az pipelines build queue --definition-name "${AZURE_PIPELINE_NAME}" --branch "${AZURE_DEVOPS_BRANCH}" --commit-id "${AZURE_DEVOPS_COMMIT}" --output json)
 else
     BUILD_OUTPUT=$(az pipelines build queue --definition-name "${AZURE_PIPELINE_NAME}" --output json)
