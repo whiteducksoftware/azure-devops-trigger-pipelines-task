@@ -2,8 +2,6 @@ name: Build and push Image - Release
 
 on:
   push:
-    branches:
-      - master
     tags:
       - '*'
   schedule:
