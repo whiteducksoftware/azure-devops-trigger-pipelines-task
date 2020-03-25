@@ -1,4 +1,5 @@
 # Azure DevOps Pipelines trigger task
+![Build and push Image](https://github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/workflows/Build%20and%20push%20Image/badge.svg?branch=master)
 
 ### Description
 Image which can be used in Azure DevOps Pipelines to trigger other pipelines.  
