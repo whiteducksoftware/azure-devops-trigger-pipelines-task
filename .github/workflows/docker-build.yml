@@ -1,4 +1,4 @@
-name: Publish to Registry
+name: Build and push Image
 
 on:
   push:
