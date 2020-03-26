@@ -36,6 +36,13 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflag
 # Runner
 FROM scratch
 
+# Add lables
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.name="Trigger Azure Pipelines" 
+LABEL org.label-schema.description="Container which can trigger Azure pipeline(s)" 
+LABEL org.label-schema.vcs-ref="https://github.com/whiteducksoftware/azure-devops-trigger-pipelines-task"
+LABEL org.label-schema.maintainer="Stefan Kürzeder <stefan.kuerzeder@whiteduck.de>"
+
 # Import the user and group files from the builder.
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
