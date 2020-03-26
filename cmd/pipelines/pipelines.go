@@ -74,7 +74,7 @@ func init() {
 	Cmd.AddCommand(trigger.Cmd)
 
 	// Define flags
-	azure.AddFlags(Cmd, []azure.FlagDefinition{azure.OrganizationUrlFlagName, azure.PersonalAccessTokenFlagName}, true)
+	azure.AddFlags(Cmd, []azure.FlagDefinition{azure.OrganizationUrlFlagName, azure.PersonalAccessTokenFlagName})
 	Cmd.MarkPersistentFlagRequired(azure.OrganizationUrlFlagName.Name)
 	Cmd.MarkPersistentFlagRequired(azure.PersonalAccessTokenFlagName.Name)
 }

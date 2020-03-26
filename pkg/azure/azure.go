@@ -35,23 +35,26 @@ type FlagDefinition struct {
 	Shorthand   string
 	Default     string
 	Description string
+	Persistent  bool
 }
 
 var (
 	OrganizationUrlFlagName FlagDefinition = FlagDefinition{
 		Name:        "url",
 		Description: "Azure DevOps Organization Url (must be https://dev.azure.com/ORG or https://ORG.visualstudio.com)",
+		Persistent:  true,
 	}
 	PersonalAccessTokenFlagName FlagDefinition = FlagDefinition{
 		Name:        "token",
 		Description: "Azure DevOps Personal Access Token (PAT)",
+		Persistent:  true,
 	}
 )
 
-func AddFlags(cmd *cobra.Command, flags []FlagDefinition, persistent bool) {
+func AddFlags(cmd *cobra.Command, flags []FlagDefinition) {
 	for _, flag := range flags {
 		var flags *pflag.FlagSet
-		if persistent {
+		if flag.Persistent {
 			flags = cmd.PersistentFlags()
 		} else {
 			flags = cmd.Flags()

@@ -131,6 +131,6 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	azure.AddFlags(Cmd, []azure.FlagDefinition{ProjectFlag, RepositoryNameFlag, TargetRefNameFlag, TargetVersionFlag}, false)
+	azure.AddFlags(Cmd, []azure.FlagDefinition{ProjectFlag, RepositoryNameFlag, TargetRefNameFlag, TargetVersionFlag})
 	Cmd.MarkFlagRequired(ProjectFlag.Name)
 }
