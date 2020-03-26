@@ -18,7 +18,7 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 container: 
-  image: whiteduck/azure-devops-pipeline-trigger-task:v1.0
+  image: whiteduck/azure-devops-pipeline-trigger-task:v2.0
 
 variables:
   AZURE_DEVOPS_URL: "https://dev.azure.com/demo"
@@ -40,7 +40,7 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 container: 
-  image: whiteduck/azure-devops-pipeline-trigger-task:v1.0
+  image: whiteduck/azure-devops-pipeline-trigger-task:v2.0
 
 variables:
   AZURE_DEVOPS_URL: "https://dev.azure.com/demo"
