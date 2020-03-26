@@ -52,7 +52,12 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		if urlMatchA == false && urlMatchB == false {
+		urlMatchC, err := regexp.MatchString(`(?i)^https://(www\.)?([^.]+)\.([^.]+.)+/tfs/DefaultCollection$`, url)
+		if err != nil {
+			return err
+		}
+
+		if urlMatchA == false && urlMatchB == false && urlMatchC {
 			return errors.New("Invalid Orgranization Url has been passed")
 		}
 
