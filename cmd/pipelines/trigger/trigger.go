@@ -33,25 +33,26 @@ import (
 )
 
 var (
-	ProjectFlag azure.FlagDefinition = azure.FlagDefinition{
+	projectFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "project",
 		Shorthand:   "p",
 		Description: "",
 	}
-	RepositoryNameFlag azure.FlagDefinition = azure.FlagDefinition{
+	repositoryNameFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "repo",
 		Description: "",
 	}
-	TargetRefNameFlag azure.FlagDefinition = azure.FlagDefinition{
+	targetRefNameFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetRefName",
 		Description: "",
 	}
-	TargetVersionFlag azure.FlagDefinition = azure.FlagDefinition{
+	targetVersionFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetVersion",
 		Description: "",
 	}
 )
 
+// Cmd represents the trigger command
 var Cmd = &cobra.Command{
 	Use:   "trigger",
 	Short: "Triggers the specified pipeline(s)",
@@ -62,7 +63,7 @@ var Cmd = &cobra.Command{
 
 		flags := cmd.Flags()
 
-		project, err := flags.GetString(ProjectFlag.Name)
+		project, err := flags.GetString(projectFlag.Name)
 		if err != nil {
 			return err
 		}
@@ -83,18 +84,18 @@ var Cmd = &cobra.Command{
 				// ToDO: These parameters seems to get ignored by the DevOps Api
 				// https://github.com/microsoft/azure-devops-go-api/issues/55
 				var repositoryResourceParameters map[string]pipelines.RepositoryResourceParameters
-				if utils.IsFlagPassed(RepositoryNameFlag.Name, flags) && utils.IsFlagPassed(TargetRefNameFlag.Name, flags) && utils.IsFlagPassed(TargetVersionFlag.Name, flags) {
-					repoName, err := flags.GetString(RepositoryNameFlag.Name)
+				if utils.IsFlagPassed(repositoryNameFlag.Name, flags) && utils.IsFlagPassed(targetRefNameFlag.Name, flags) && utils.IsFlagPassed(targetVersionFlag.Name, flags) {
+					repoName, err := flags.GetString(repositoryNameFlag.Name)
 					if err != nil {
 						return err
 					}
 
-					targetRefName, err := flags.GetString(TargetRefNameFlag.Name)
+					targetRefName, err := flags.GetString(targetRefNameFlag.Name)
 					if err != nil {
 						return err
 					}
 
-					targetVersion, err := flags.GetString(TargetVersionFlag.Name)
+					targetVersion, err := flags.GetString(targetVersionFlag.Name)
 					if err != nil {
 						return err
 					}
@@ -131,6 +132,6 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	azure.AddFlags(Cmd, []azure.FlagDefinition{ProjectFlag, RepositoryNameFlag, TargetRefNameFlag, TargetVersionFlag})
-	Cmd.MarkFlagRequired(ProjectFlag.Name)
+	azure.AddFlags(Cmd, []azure.FlagDefinition{projectFlag, repositoryNameFlag, targetRefNameFlag, targetVersionFlag})
+	Cmd.MarkFlagRequired(projectFlag.Name)
 }
