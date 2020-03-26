@@ -33,9 +33,10 @@ import (
 type FlagDefinition struct {
 	Name        string
 	Shorthand   string
-	Default     string
+	Default     interface{}
 	Description string
 	Persistent  bool
+	Type        interface{}
 }
 
 var (
@@ -43,11 +44,13 @@ var (
 		Name:        "url",
 		Description: "Azure DevOps Organization Url (must be https://dev.azure.com/ORG or https://ORG.visualstudio.com)",
 		Persistent:  true,
+		Type:        "", // -> string
 	}
 	PersonalAccessTokenFlagName FlagDefinition = FlagDefinition{
 		Name:        "token",
 		Description: "Azure DevOps Personal Access Token (PAT)",
 		Persistent:  true,
+		Type:        "", // -> string
 	}
 )
 
@@ -60,10 +63,29 @@ func AddFlags(cmd *cobra.Command, flags []FlagDefinition) {
 			flags = cmd.Flags()
 		}
 
-		if flag.Shorthand != "" {
-			flags.StringP(flag.Name, flag.Shorthand, flag.Default, flag.Description)
-		} else {
-			flags.String(flag.Name, flag.Default, flag.Description)
+		switch flag.Type.(type) {
+		case bool:
+			var cmdDefault bool
+			if flag.Default != nil {
+				cmdDefault = flag.Default.(bool)
+			}
+
+			if flag.Shorthand != "" {
+				flags.BoolP(flag.Name, flag.Shorthand, cmdDefault, flag.Description)
+			} else {
+				flags.Bool(flag.Name, cmdDefault, flag.Description)
+			}
+		case string:
+			var cmdDefault string
+			if flag.Default != nil {
+				cmdDefault = flag.Default.(string)
+			}
+
+			if flag.Shorthand != "" {
+				flags.StringP(flag.Name, flag.Shorthand, cmdDefault, flag.Description)
+			} else {
+				flags.String(flag.Name, cmdDefault, flag.Description)
+			}
 		}
 	}
 }
