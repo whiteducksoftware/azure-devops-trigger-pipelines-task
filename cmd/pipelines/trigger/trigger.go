@@ -27,6 +27,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelines"
+	"github.com/prometheus/common/log"
 	"github.com/spf13/cobra"
 	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/pkg/azure"
 	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/pkg/utils"
@@ -36,10 +37,6 @@ var (
 	projectFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "project",
 		Shorthand:   "p",
-		Description: "",
-	}
-	repositoryNameFlag azure.FlagDefinition = azure.FlagDefinition{
-		Name:        "repo",
 		Description: "",
 	}
 	targetRefNameFlag azure.FlagDefinition = azure.FlagDefinition{
@@ -84,12 +81,7 @@ var Cmd = &cobra.Command{
 				// ToDO: These parameters seems to get ignored by the DevOps Api
 				// https://github.com/microsoft/azure-devops-go-api/issues/55
 				var repositoryResourceParameters map[string]pipelines.RepositoryResourceParameters
-				if utils.IsFlagPassed(repositoryNameFlag.Name, flags) && utils.IsFlagPassed(targetRefNameFlag.Name, flags) && utils.IsFlagPassed(targetVersionFlag.Name, flags) {
-					repoName, err := flags.GetString(repositoryNameFlag.Name)
-					if err != nil {
-						return err
-					}
-
+				if utils.IsFlagPassed(targetRefNameFlag.Name, flags) && utils.IsFlagPassed(targetVersionFlag.Name, flags) {
 					targetRefName, err := flags.GetString(targetRefNameFlag.Name)
 					if err != nil {
 						return err
@@ -101,7 +93,7 @@ var Cmd = &cobra.Command{
 					}
 
 					repositoryResourceParameters = map[string]pipelines.RepositoryResourceParameters{
-						repoName: pipelines.RepositoryResourceParameters{
+						"self": pipelines.RepositoryResourceParameters{
 							RefName: to.StringPtr(targetRefName),
 							Version: to.StringPtr(targetVersion),
 						},
@@ -124,6 +116,8 @@ var Cmd = &cobra.Command{
 				if *runResult.State != pipelines.RunStateValues.InProgress && *runResult.State != pipelines.RunStateValues.Completed {
 					return fmt.Errorf("Unkown error occured, result: %s, state: %s", string(*runResult.Result), string(*runResult.State))
 				}
+
+				log.Info(*runResult.Url)
 			}
 		}
 
@@ -132,6 +126,6 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	azure.AddFlags(Cmd, []azure.FlagDefinition{projectFlag, repositoryNameFlag, targetRefNameFlag, targetVersionFlag})
+	azure.AddFlags(Cmd, []azure.FlagDefinition{projectFlag, targetRefNameFlag, targetVersionFlag})
 	Cmd.MarkFlagRequired(projectFlag.Name)
 }
