@@ -1,4 +1,4 @@
-module github.com/whiteducksoftware/azure-devops-trigger-pipelines-task-go
+module github.com/whiteducksoftware/azure-devops-trigger-pipelines-task
 
 go 1.14
 

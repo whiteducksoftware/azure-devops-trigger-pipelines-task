@@ -23,18 +23,12 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task-go/cmd/pipelines"
+	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/cmd/pipelines"
 )
 
 var RootCmd = &cobra.Command{
-	Use:   "azure-devops-trigger-pipelines-task-go",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "devops-worker",
+	Short: "Utilities for Azure DevOps",
 }
 
 func init() {

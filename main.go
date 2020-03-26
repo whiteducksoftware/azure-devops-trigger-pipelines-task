@@ -24,7 +24,7 @@ package main
 import (
 	"os"
 
-	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task-go/cmd"
+	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/cmd"
 )
 
 func main() {

@@ -20,20 +20,14 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
-	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task-go/cmd/pipelines/trigger"
-	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task-go/pkg/azure"
+	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/cmd/pipelines/trigger"
+	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/pkg/azure"
 )
 
 // pipelinesCmd represents the pipelines command
 var Cmd = &cobra.Command{
 	Use:   "pipelines",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Utilities for Azure DevOps pipelines",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		flags := cmd.Flags()
 
