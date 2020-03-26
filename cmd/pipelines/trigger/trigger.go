@@ -24,6 +24,7 @@ package trigger
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelines"
@@ -38,14 +39,23 @@ var (
 		Name:        "project",
 		Shorthand:   "p",
 		Description: "",
+		Type:        "", // -> string
 	}
 	targetRefNameFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetRefName",
 		Description: "",
+		Type:        "", // -> string
 	}
 	targetVersionFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetVersion",
 		Description: "",
+		Type:        "", // -> string
+	}
+	waitForCompletionFlag azure.FlagDefinition = azure.FlagDefinition{
+		Name:        "waitForCompletion",
+		Shorthand:   "w",
+		Description: "",
+		Type:        false, // -> bool
 	}
 )
 
@@ -65,6 +75,11 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
+		wait, err := flags.GetBool(waitForCompletionFlag.Name)
+		if err != nil {
+			return err
+		}
+
 		connection, err := azure.GetDevOpsClient(flags)
 		if err != nil {
 			return err
@@ -76,30 +91,28 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
+		var repositoryResourceParameters map[string]pipelines.RepositoryResourceParameters
+		if utils.IsFlagPassed(targetRefNameFlag.Name, flags) && utils.IsFlagPassed(targetVersionFlag.Name, flags) {
+			targetRefName, err := flags.GetString(targetRefNameFlag.Name)
+			if err != nil {
+				return err
+			}
+
+			targetVersion, err := flags.GetString(targetVersionFlag.Name)
+			if err != nil {
+				return err
+			}
+
+			repositoryResourceParameters = map[string]pipelines.RepositoryResourceParameters{
+				"self": pipelines.RepositoryResourceParameters{
+					RefName: to.StringPtr(targetRefName),
+					Version: to.StringPtr(targetVersion),
+				},
+			}
+		}
+
 		for _, pipeline := range result {
 			if utils.StringInSlice(*pipeline.Name, args) {
-				// ToDO: These parameters seems to get ignored by the DevOps Api
-				// https://github.com/microsoft/azure-devops-go-api/issues/55
-				var repositoryResourceParameters map[string]pipelines.RepositoryResourceParameters
-				if utils.IsFlagPassed(targetRefNameFlag.Name, flags) && utils.IsFlagPassed(targetVersionFlag.Name, flags) {
-					targetRefName, err := flags.GetString(targetRefNameFlag.Name)
-					if err != nil {
-						return err
-					}
-
-					targetVersion, err := flags.GetString(targetVersionFlag.Name)
-					if err != nil {
-						return err
-					}
-
-					repositoryResourceParameters = map[string]pipelines.RepositoryResourceParameters{
-						"self": pipelines.RepositoryResourceParameters{
-							RefName: to.StringPtr(targetRefName),
-							Version: to.StringPtr(targetVersion),
-						},
-					}
-				}
-
 				runResult, err := pipelinesClient.RunPipeline(cmd.Context(), pipelines.RunPipelineArgs{
 					Project:    &project,
 					PipelineId: pipeline.Id,
@@ -118,6 +131,31 @@ var Cmd = &cobra.Command{
 				}
 
 				log.Info(*runResult.Url)
+
+				if wait {
+					for {
+						run, err := pipelinesClient.GetRun(cmd.Context(), pipelines.GetRunArgs{
+							Project:    &project,
+							PipelineId: pipeline.Id,
+							RunId:      runResult.Id,
+						})
+						if err != nil {
+							return err
+						}
+
+						if run.Result != nil {
+							if *run.Result == pipelines.RunResultValues.Succeeded {
+								break
+							}
+
+							if *run.Result == pipelines.RunResultValues.Failed {
+								return fmt.Errorf("Pipeline %s failed", *pipeline.Name)
+							}
+						}
+
+						time.Sleep(1 * time.Second)
+					}
+				}
 			}
 		}
 
@@ -126,6 +164,6 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	azure.AddFlags(Cmd, []azure.FlagDefinition{projectFlag, targetRefNameFlag, targetVersionFlag})
+	azure.AddFlags(Cmd, []azure.FlagDefinition{projectFlag, targetRefNameFlag, targetVersionFlag, waitForCompletionFlag})
 	Cmd.MarkFlagRequired(projectFlag.Name)
 }
