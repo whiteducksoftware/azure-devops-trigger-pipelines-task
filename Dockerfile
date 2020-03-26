@@ -1,43 +1,48 @@
-FROM ubuntu:16.04
+# Builder
+FROM golang:alpine as builder
+WORKDIR /app
 
-# Install azure-cli
-RUN apt update && \
-    apt install -y --no-install-recommends \
-      ca-certificates \
-      curl \
-      apt-transport-https \
-      lsb-release \
-      gnupg \
-      jq
+# Install git + SSL ca certificates.
+# Git is required for fetching the dependencies.
+# Ca-certificates is required to call HTTPS endpoints.
+RUN apk update && \
+    apk add --no-cache git ca-certificates && \
+    update-ca-certificates
 
-RUN curl -sL https://packages.microsoft.com/keys/microsoft.asc | \
-    gpg --dearmor | \
-    tee /etc/apt/trusted.gpg.d/microsoft.asc.gpg > /dev/null
+# Create appuser.
+ENV USER=appuser
+ENV UID=10001
 
-RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | \
-    tee /etc/apt/sources.list.d/azure-cli.list
+# See https://stackoverflow.com/a/55757473/12429735RUN
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
 
-RUN apt update && \
-    apt install -y --no-install-recommends azure-cli
+# Add src files
+ADD . .
 
-# Add lables
-LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.name="Trigger Azure Pipelines" 
-LABEL org.label-schema.description="Container which can trigger Azure pipeline(s)" 
-LABEL org.label-schema.vcs-ref="https://github.com/whiteducksoftware/azure-devops-trigger-pipelines-task"
-LABEL org.label-schema.maintainer="Stefan Kürzeder <stefan.kuerzeder@whiteduck.de>"
+# Fetch dependencies.
+RUN go mod download
+RUN go mod verify
 
-# Add scripts
-RUN mkdir -p /opt/azure/pipelines/bin
-ADD scripts /opt/azure/pipelines/
+# Build the binary.
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/devops-worker
 
-# Fix permissions of the scripts
-RUN chmod +x /opt/azure/pipelines/init.sh
-RUN chmod +x /opt/azure/pipelines/queue.sh
+# Runner
+FROM scratch
 
-# Create bin folder
-RUN ln -s /opt/azure/pipelines/init.sh /opt/azure/pipelines/bin/task_init
-RUN ln -s /opt/azure/pipelines/queue.sh /opt/azure/pipelines/bin/task_queue
+# Import the user and group files from the builder.
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
 
-# Add to path
-ENV PATH="/opt/azure/pipelines/bin:${PATH}"
+# Copy our static executable.
+COPY --from=builder /go/bin/devops-worker /go/bin/devops-worker
+ENV PATH=$PATH:/go/bin
+
+# Use an unprivileged user.
+USER appuser:appuser
