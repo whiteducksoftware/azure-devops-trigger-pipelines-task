@@ -151,8 +151,8 @@ var Cmd = &cobra.Command{
 									log.Errorln("Failed to serialize result into json", err)
 								} else {
 									log.Info(string(json))
-									break
 								}
+								break
 							}
 
 							if *run.Result == pipelines.RunResultValues.Failed {
