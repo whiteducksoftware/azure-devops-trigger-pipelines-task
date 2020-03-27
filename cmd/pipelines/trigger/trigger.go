@@ -22,6 +22,7 @@ THE SOFTWARE.
 package trigger
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -38,24 +39,24 @@ var (
 	projectFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "project",
 		Shorthand:   "p",
+		Default:     "",
 		Description: "",
-		Type:        "", // -> string
 	}
 	targetRefNameFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetRefName",
+		Default:     "",
 		Description: "",
-		Type:        "", // -> string
 	}
 	targetVersionFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetVersion",
+		Default:     "",
 		Description: "",
-		Type:        "", // -> string
 	}
 	waitForCompletionFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "waitForCompletion",
 		Shorthand:   "w",
+		Default:     false,
 		Description: "",
-		Type:        false, // -> bool
 	}
 )
 
@@ -145,7 +146,13 @@ var Cmd = &cobra.Command{
 
 						if run.Result != nil {
 							if *run.Result == pipelines.RunResultValues.Succeeded {
-								break
+								json, err := json.Marshal(*run)
+								if err != nil {
+									log.Errorln("Failed to serialize result into json", err)
+								} else {
+									log.Info(string(json))
+									break
+								}
 							}
 
 							if *run.Result == pipelines.RunResultValues.Failed {
@@ -154,6 +161,13 @@ var Cmd = &cobra.Command{
 						}
 
 						time.Sleep(1 * time.Second)
+					}
+				} else {
+					json, err := json.Marshal(*runResult)
+					if err != nil {
+						log.Errorln("Failed to serialize result into json", err)
+					} else {
+						log.Info(string(json))
 					}
 				}
 			}

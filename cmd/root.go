@@ -22,27 +22,16 @@ THE SOFTWARE.
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/cmd/pipelines"
-)
-
-var (
-	debug bool
 )
 
 var RootCmd = &cobra.Command{
 	Use:   "devops-worker",
 	Short: "Utilities for Azure DevOps",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if debug {
-			log.SetLevel(log.DebugLevel)
-		}
-	},
 }
 
 func init() {
 	// Add commands
 	RootCmd.AddCommand(pipelines.Cmd)
-	RootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable verbose debug logs")
 }
