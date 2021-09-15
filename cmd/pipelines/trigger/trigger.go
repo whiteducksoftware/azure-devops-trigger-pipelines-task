@@ -105,7 +105,7 @@ var Cmd = &cobra.Command{
 			}
 
 			repositoryResourceParameters = map[string]pipelines.RepositoryResourceParameters{
-				"self": pipelines.RepositoryResourceParameters{
+				"self": {
 					RefName: to.StringPtr(targetRefName),
 					Version: to.StringPtr(targetVersion),
 				},
