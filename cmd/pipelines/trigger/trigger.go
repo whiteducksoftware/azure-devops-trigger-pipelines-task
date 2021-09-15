@@ -92,23 +92,31 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		var repositoryResourceParameters map[string]pipelines.RepositoryResourceParameters
-		if utils.IsFlagPassed(targetRefNameFlag.Name, flags) && utils.IsFlagPassed(targetVersionFlag.Name, flags) {
+		repositoryResourceParameters := map[string]pipelines.RepositoryResourceParameters{
+			"self": {},
+		}
+
+		if utils.IsFlagPassed(targetRefNameFlag.Name, flags) {
 			targetRefName, err := flags.GetString(targetRefNameFlag.Name)
 			if err != nil {
 				return err
 			}
 
+			if entry, ok := repositoryResourceParameters["self"]; ok {
+				entry.RefName = to.StringPtr(targetRefName)
+				repositoryResourceParameters["self"] = entry
+			}
+		}
+
+		if utils.IsFlagPassed(targetVersionFlag.Name, flags) {
 			targetVersion, err := flags.GetString(targetVersionFlag.Name)
 			if err != nil {
 				return err
 			}
 
-			repositoryResourceParameters = map[string]pipelines.RepositoryResourceParameters{
-				"self": {
-					RefName: to.StringPtr(targetRefName),
-					Version: to.StringPtr(targetVersion),
-				},
+			if entry, ok := repositoryResourceParameters["self"]; ok {
+				entry.Version = to.StringPtr(targetVersion)
+				repositoryResourceParameters["self"] = entry
 			}
 		}
 
