@@ -23,11 +23,14 @@ package azure
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/microsoft/azure-devops-go-api/azuredevops"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/pipelines"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/whiteducksoftware/azure-devops-trigger-pipelines-task/pkg/utils"
 )
 
 type FlagDefinition struct {
@@ -93,21 +96,36 @@ func GetDevOpsClient(flags *pflag.FlagSet) (*azuredevops.Connection, error) {
 	return azuredevops.NewPatConnection(orgURL, pat), nil
 }
 
-func ListDevOpsPipelines(ctx context.Context, client pipelines.Client, project *string) ([]pipelines.Pipeline, error) {
-	output := make([]pipelines.Pipeline, 0)
+func GetDevOpsPiplines(ctx context.Context, client pipelines.Client, project string, names []string) ([]pipelines.Pipeline, error) {
+	var (
+		output     []pipelines.Pipeline
+		foundNames []string
+	)
 
 	var continuationToken string
 	for ok := true; ok; ok = continuationToken != "" {
 		result, err := client.ListPipelines(ctx, pipelines.ListPipelinesArgs{
-			Project:           project,
+			Project:           &project,
 			ContinuationToken: &continuationToken,
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		output = append(output, result.Value...)
+		for _, pipeline := range result.Value {
+			if utils.StringInSlice(*pipeline.Name, names) {
+				output = append(output, pipeline)
+				foundNames = append(foundNames, *pipeline.Name)
+			}
+		}
+
 		continuationToken = result.ContinuationToken
+	}
+
+	// Check if we found all pipelines
+	if len(names) != len(foundNames) {
+		missingNames := utils.Diff(names, foundNames)
+		return nil, fmt.Errorf("following pipelines could not be found: %s", strings.Join(missingNames, ", "))
 	}
 
 	return output, nil

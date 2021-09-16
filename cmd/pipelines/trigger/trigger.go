@@ -24,7 +24,6 @@ package trigger
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/to"
@@ -44,11 +43,13 @@ var (
 	}
 	targetRefNameFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetRefName",
+		Shorthand:   "r",
 		Default:     "",
 		Description: "(Optional) Specify the GitRef on which the Pipeline should run",
 	}
 	targetVersionFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetVersion",
+		Shorthand:   "v",
 		Default:     "",
 		Description: "(Optional) Specify the Commit Hash on which the Pipeline should run",
 	}
@@ -87,97 +88,89 @@ var Cmd = &cobra.Command{
 		}
 
 		pipelinesClient := pipelines.NewClient(cmd.Context(), connection)
-		result, err := azure.ListDevOpsPipelines(cmd.Context(), pipelinesClient, &project)
+		result, err := azure.GetDevOpsPiplines(cmd.Context(), pipelinesClient, project, args)
 		if err != nil {
 			return err
 		}
 
-		repositoryResourceParameters := map[string]pipelines.RepositoryResourceParameters{
-			"self": {},
-		}
-
-		if utils.IsFlagPassed(targetRefNameFlag.Name, flags) {
-			targetRefName, err := flags.GetString(targetRefNameFlag.Name)
-			if err != nil {
-				return err
-			}
-
-			if entry, ok := repositoryResourceParameters["self"]; ok {
-				entry.RefName = to.StringPtr(targetRefName)
-				repositoryResourceParameters["self"] = entry
-			}
-		}
-
+		repositoryResourceParameters := pipelines.RepositoryResourceParameters{}
 		if utils.IsFlagPassed(targetVersionFlag.Name, flags) {
 			targetVersion, err := flags.GetString(targetVersionFlag.Name)
 			if err != nil {
 				return err
 			}
 
-			if entry, ok := repositoryResourceParameters["self"]; ok {
-				entry.Version = to.StringPtr(targetVersion)
-				repositoryResourceParameters["self"] = entry
+			repositoryResourceParameters.Version = to.StringPtr(targetVersion)
+		}
+		if utils.IsFlagPassed(targetRefNameFlag.Name, flags) {
+			targetRefName, err := flags.GetString(targetRefNameFlag.Name)
+			if err != nil {
+				return err
 			}
+
+			repositoryResourceParameters.RefName = to.StringPtr(targetRefName)
 		}
 
 		for _, pipeline := range result {
-			if utils.StringInSlice(*pipeline.Name, args) {
-				runResult, err := pipelinesClient.RunPipeline(cmd.Context(), pipelines.RunPipelineArgs{
-					Project:    &project,
-					PipelineId: pipeline.Id,
-					RunParameters: &pipelines.RunPipelineParameters{
-						Resources: &pipelines.RunResourcesParameters{
-							Repositories: &repositoryResourceParameters,
-						},
+			runResult, err := pipelinesClient.RunPipeline(cmd.Context(), pipelines.RunPipelineArgs{
+				Project:    &project,
+				PipelineId: pipeline.Id,
+				RunParameters: &pipelines.RunPipelineParameters{
+					Resources: &pipelines.RunResourcesParameters{
+						Repositories: &map[string]pipelines.RepositoryResourceParameters{"self": repositoryResourceParameters},
 					},
-				})
-				if err != nil {
-					return err
-				}
+				},
+			})
+			if err != nil {
+				return err
+			}
 
-				if *runResult.State != pipelines.RunStateValues.InProgress && *runResult.State != pipelines.RunStateValues.Completed {
-					return fmt.Errorf("unkown error occured, result: %s, state: %s", string(*runResult.Result), string(*runResult.State))
-				}
+			if *runResult.State != pipelines.RunStateValues.InProgress && *runResult.State != pipelines.RunStateValues.Completed {
+				log.Errorf("unkown error occured, result: %s, state: %s", string(*runResult.Result), string(*runResult.State))
+			}
 
-				log.Info(*runResult.Url)
+			log.Info(*runResult.Url)
 
-				if wait {
-					for {
-						run, err := pipelinesClient.GetRun(cmd.Context(), pipelines.GetRunArgs{
-							Project:    &project,
-							PipelineId: pipeline.Id,
-							RunId:      runResult.Id,
-						})
-						if err != nil {
-							return err
-						}
-
-						if run.Result != nil {
-							switch *run.Result {
-							case pipelines.RunResultValues.Succeeded:
-								json, err := json.Marshal(*run)
-								if err != nil {
-									return fmt.Errorf("failed to serialize result into json, %s", err.Error())
-								} else {
-									log.Info(string(json))
-									return nil
-								}
-							case pipelines.RunResultValues.Failed:
-								return fmt.Errorf("pipeline %s failed", *pipeline.Name)
-							case pipelines.RunResultValues.Canceled:
-								return fmt.Errorf("pipeline %s was canceled", *pipeline.Name)
-							}
-						}
-
-						time.Sleep(1 * time.Second)
-					}
-				} else {
-					json, err := json.Marshal(*runResult)
+			if wait {
+			__Completion_Check_Loop: // labeled for better code readablilty
+				for {
+					run, err := pipelinesClient.GetRun(cmd.Context(), pipelines.GetRunArgs{
+						Project:    &project,
+						PipelineId: pipeline.Id,
+						RunId:      runResult.Id,
+					})
 					if err != nil {
-						return fmt.Errorf("failed to serialize result into json, %s", err.Error())
-					} else {
-						log.Info(string(json))
+						return err
 					}
+
+					if run.Result != nil {
+						switch *run.Result {
+						case pipelines.RunResultValues.Succeeded:
+							json, err := json.Marshal(*run)
+							if err != nil {
+								log.Errorf("failed to serialize result into json, %s", err.Error())
+							} else {
+								log.Info(string(json))
+							}
+						case pipelines.RunResultValues.Failed:
+							log.Errorf("pipeline %s failed", *pipeline.Name)
+						case pipelines.RunResultValues.Canceled:
+							log.Warnf("pipeline %s was canceled", *pipeline.Name)
+						default:
+							log.Errorf("pipeline %s, unknown error occured, result: %s", *pipeline.Name, string(*run.Result))
+						}
+
+						break __Completion_Check_Loop
+					}
+
+					time.Sleep(10 * time.Second)
+				}
+			} else {
+				json, err := json.Marshal(*runResult)
+				if err != nil {
+					log.Errorf("pipeline %s, failed to serialize result into json, %s", *&pipeline.Name, err.Error())
+				} else {
+					log.Info(string(json))
 				}
 			}
 		}

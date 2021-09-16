@@ -15,8 +15,8 @@ Usage:
 Flags:
   -h, --help                   help for trigger
   -p, --project string         Name of the Azure DevOps Project
-      --targetRefName string   (Optional) Specify the GitRef on which the Pipeline should run
-      --targetVersion string   (Optional) Specify the Commit Hash on which the Pipeline should run
+  -r, --targetRefName string   (Optional) Specify the GitRef on which the Pipeline should run
+  -v, --targetVersion string   (Optional) Specify the Commit Hash on which the Pipeline should run
   -w, --waitForCompletion      (Optional) Specify if the task should block until the target pipeline is completed
 
 Global Flags:
@@ -49,4 +49,4 @@ steps:
         --waitForCompletion \
         -- "My Demo Pipeline"
     displayName: "Trigger 'My Demo Pipeline' pipeline"
-``
+```
