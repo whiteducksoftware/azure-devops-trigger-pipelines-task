@@ -66,7 +66,7 @@ var Cmd = &cobra.Command{
 	Short: "Triggers the specified pipeline(s)",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			return errors.New("No pipeline names have been passed")
+			return errors.New("no pipeline names have been passed")
 		}
 
 		flags := cmd.Flags()
@@ -136,7 +136,7 @@ var Cmd = &cobra.Command{
 				}
 
 				if *runResult.State != pipelines.RunStateValues.InProgress && *runResult.State != pipelines.RunStateValues.Completed {
-					return fmt.Errorf("Unkown error occured, result: %s, state: %s", string(*runResult.Result), string(*runResult.State))
+					return fmt.Errorf("unkown error occured, result: %s, state: %s", string(*runResult.Result), string(*runResult.State))
 				}
 
 				log.Info(*runResult.Url)
@@ -153,18 +153,19 @@ var Cmd = &cobra.Command{
 						}
 
 						if run.Result != nil {
-							if *run.Result == pipelines.RunResultValues.Succeeded {
+							switch *run.Result {
+							case pipelines.RunResultValues.Succeeded:
 								json, err := json.Marshal(*run)
 								if err != nil {
-									log.Errorln("Failed to serialize result into json", err)
+									return fmt.Errorf("failed to serialize result into json, %s", err.Error())
 								} else {
 									log.Info(string(json))
+									return nil
 								}
-								break
-							}
-
-							if *run.Result == pipelines.RunResultValues.Failed {
-								return fmt.Errorf("Pipeline %s failed", *pipeline.Name)
+							case pipelines.RunResultValues.Failed:
+								return fmt.Errorf("pipeline %s failed", *pipeline.Name)
+							case pipelines.RunResultValues.Canceled:
+								return fmt.Errorf("pipeline %s was canceled", *pipeline.Name)
 							}
 						}
 
@@ -173,7 +174,7 @@ var Cmd = &cobra.Command{
 				} else {
 					json, err := json.Marshal(*runResult)
 					if err != nil {
-						log.Errorln("Failed to serialize result into json", err)
+						return fmt.Errorf("failed to serialize result into json, %s", err.Error())
 					} else {
 						log.Info(string(json))
 					}

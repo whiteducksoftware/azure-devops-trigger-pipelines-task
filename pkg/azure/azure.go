@@ -48,7 +48,7 @@ var (
 	PersonalAccessTokenFlagName FlagDefinition = FlagDefinition{
 		Name:        "token",
 		Default:     "",
-		Description: "Azure DevOps Personal Access Token (PAT)",
+		Description: "Azure DevOps Personal Access Token (PAT) / Value of $(System.AccessToken)",
 		Persistent:  true,
 	}
 )
