@@ -42,11 +42,6 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		pat, err := flags.GetString(azure.PersonalAccessTokenFlagName.Name)
-		if err != nil {
-			return err
-		}
-
 		// Check for a valid devops organization url
 		urlMatchA, err := regexp.MatchString(`(?i)^https://dev.azure.com/[a-zA-Z0-9]{1,256}$`, url)
 		if err != nil {
@@ -65,15 +60,6 @@ var Cmd = &cobra.Command{
 
 		if urlMatchA == false && urlMatchB == false && urlMatchC {
 			return errors.New("Invalid Orgranization Url has been passed")
-		}
-
-		patMatch, err := regexp.MatchString(`^[a-z0-9]{52}$`, pat)
-		if err != nil {
-			return err
-		}
-
-		if patMatch == false {
-			return errors.New("Invalid PAT has been passed")
 		}
 
 		return nil

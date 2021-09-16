@@ -40,23 +40,23 @@ var (
 		Name:        "project",
 		Shorthand:   "p",
 		Default:     "",
-		Description: "",
+		Description: "Name of the Azure DevOps Project",
 	}
 	targetRefNameFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetRefName",
 		Default:     "",
-		Description: "",
+		Description: "(Optional) Specify the GitRef on which the Pipeline should run",
 	}
 	targetVersionFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "targetVersion",
 		Default:     "",
-		Description: "",
+		Description: "(Optional) Specify the Commit Hash on which the Pipeline should run",
 	}
 	waitForCompletionFlag azure.FlagDefinition = azure.FlagDefinition{
 		Name:        "waitForCompletion",
 		Shorthand:   "w",
 		Default:     false,
-		Description: "",
+		Description: "(Optional) Specify if the task should block until the target pipeline is completed",
 	}
 )
 
